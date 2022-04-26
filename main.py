@@ -1,11 +1,16 @@
 from configparser import Interpolation
 from re import X
+from shutil import which
 import pygame
 import castles_war_constants as c
 
 if __name__ == '__main__':
     # initialise pygame
     pygame.init()
+
+    # events
+    moving = pygame.USEREVENT + 0
+    pygame.time.set_timer(moving, 2)
 
     # program icon
     programIcon = pygame.image.load('img/icon_icebreaker.jpg')
@@ -24,13 +29,17 @@ if __name__ == '__main__':
     NEVESOTTO_Y = SCREEN_HEIGHT
     NEVESOTTO_WIDTH = 30
     NEVESOTTO_HEIGHT = 70
+    GHIACCIOSOTTO_WIDTH = 70
+    #
+    ANGLE_ROT = 12 #piu alto piu gira veloce in teoria
 
     #position
     MURODESTRA_X = SCREEN_WIDTH
     MURODESTRA_Y = 0
     #
-    PALLA_X = SCREEN_WIDTH/2
-    PALLA_Y = SCREEN_HEIGHT/2
+    BLOCCO1 = SCREEN_HEIGHT/2
+    BLOCCO2 = SCREEN_HEIGHT/2
+    dir = [0, 0]
 
     # create game window
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -46,6 +55,8 @@ if __name__ == '__main__':
     ghiacciosotto_img_flip = pygame.transform.flip(ghiacciosotto_img, False, True)
     ghiacciosotto_img_flipl=pygame.image.load('img/Tiles/spikesBottomAlt.png').convert_alpha()
     ghiacciosotto_img_flipr = pygame.transform.flip(ghiacciosotto_img_flipl, True, False)
+    coso_img_flipl=pygame.image.load('img/Tiles/caneGreen.png').convert_alpha()
+    coso_img_flipr = pygame.transform.flip(coso_img_flipl, True, False)
     palla_gif=pygame.image.load('img/palla.gif')
 
 
@@ -53,13 +64,20 @@ if __name__ == '__main__':
     # constants
     play = True
     INIT_RESOURCES = 10
+    speed = [2, 1]
+    pallarect = palla_gif.get_rect()
     
-    #background
-    muro = c.Wall(muro_img, WALL_POS - WALL_WIDTH // 2)
-    muro2 = c.Wall(muro_img, screen.get_width() - WALL_POS - WALL_WIDTH // 2)
+    # rotate image
+    def palla_rotator():
+      palla_gif =  pygame.transform.rotate(palla_gif, ANGLE_ROT)
+      pass
 
+    # # muovi blocco 1
+    # def move1(moveTF):
+    #   
+    #   pass
   
-
+################################################################## CICLO ##################################################################
     while play:
       
         # Background color
@@ -67,35 +85,68 @@ if __name__ == '__main__':
 
         pygame.display.set_caption('----------- ICEBRAKER -----------')
 
-        # draw buildings
-        muro.draw(screen)
-        muro2.draw(screen)
-        screen.blit(palla_gif, (PALLA_X,PALLA_Y))
+        # draw cursori
+        screen.blit(coso_img_flipl, (GHIACCIOSOTTO_WIDTH,BLOCCO1))
+        screen.blit(coso_img_flipr, (SCREEN_WIDTH - (GHIACCIOSOTTO_WIDTH*2),BLOCCO2))
+        palla_rotator
 
         # lati
         for x in range(0, SCREEN_WIDTH, NEVESOTTO_WIDTH):
+            screen.blit(muro_img, (0,x))
+            screen.blit(muro_img, (SCREEN_WIDTH - NEVESOTTO_HEIGHT, x))
             screen.blit(ghiacciosotto_img_flipl, (0,x))
             screen.blit(ghiacciosotto_img_flipr, (SCREEN_WIDTH - NEVESOTTO_HEIGHT, x))
+            screen.blit(ghiacciosotto_img_flipl, (0,x))
+            screen.blit(ghiacciosotto_img_flipr, (SCREEN_WIDTH - NEVESOTTO_HEIGHT, x))
+
         # pavimento/soffitto
+        for x in range(0, SCREEN_WIDTH, GHIACCIOSOTTO_WIDTH):
+            screen.blit(ghiacciosotto_img, (x,SCREEN_HEIGHT - (GHIACCIOSOTTO_WIDTH+(NEVESOTTO_HEIGHT/7))))
+            screen.blit(ghiacciosotto_img_flip, (x,NEVESOTTO_HEIGHT/7))
         for x in range(0, SCREEN_WIDTH, NEVESOTTO_WIDTH):
             screen.blit(nevesotto_img, (x,SCREEN_HEIGHT - NEVESOTTO_HEIGHT))
             screen.blit(nevesotto_img_flip, (x,0))
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 play = False
             
-            #gravità
             
+            #sposta 
+            if event.type == pygame.KEYDOWN:##
+               if event.key == pygame.K_q:
+                   dir[0] = -1
+               if event.key == pygame.K_a:
+                   dir[0] = 1
+               if event.key == pygame.K_p:
+                   dir[1] = -1
+               if event.key == pygame.K_l:
+                   dir[1] = 1
+            if event.type == pygame.KEYUP:##
+               if event.key == pygame.K_q:
+                  dir[0] = 0
+               if event.key == pygame.K_a:
+                   dir[0] = 0
+               if event.key == pygame.K_p:
+                   dir[1] = 0
+               if event.key == pygame.K_l:
+                   dir[1] = 0
 
-            #sposta 1 asse Y
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_w:
-                PALLA_Y += 1
+            #move
+            if event.type == moving:
+                BLOCCO1 += dir[0]
+                BLOCCO2 += dir[1]
 
-            #sposta 2 asse Y
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_w:
-                PALLA_Y += 1
-    
+            
+        pallarect = pallarect.move(speed)
+        if pallarect.left < 0 or pallarect.right > SCREEN_WIDTH:
+             speed[0] = -speed[0]
+        if pallarect.top < 0 or pallarect.bottom > SCREEN_HEIGHT:
+           speed[1] = -speed[1]
+
+        #screen.fill(black)
+        screen.blit(palla_gif, pallarect)
     
  
         # update display window
