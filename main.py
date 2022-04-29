@@ -38,7 +38,7 @@ if __name__ == '__main__':
     MURODESTRA_Y = 0
     #
     BLOCCO1 = SCREEN_HEIGHT/2
-    BLOCCO2 = SCREEN_HEIGHT/2
+    BLOCCO2 = SCREEN_HEIGHT-(GHIACCIOSOTTO_WIDTH+NEVESOTTO_WIDTH/2)
     dir = [0, 0]
 
     # create game window
@@ -57,7 +57,10 @@ if __name__ == '__main__':
     ghiacciosotto_img_flipr = pygame.transform.flip(ghiacciosotto_img_flipl, True, False)
     coso_img_flipl=pygame.image.load('img/Tiles/caneGreen.png').convert_alpha()
     coso_img_flipr = pygame.transform.flip(coso_img_flipl, True, False)
+    brokenWall_img=pygame.image.load('img/Tiles/brokenWall.png').convert_alpha()
+    brokenWall_img_flip = pygame.transform.flip(coso_img_flipl, True, False)
     palla_gif=pygame.image.load('img/palla.gif')
+    game_over=pygame.image.load('img/game-over.png').convert_alpha()
 
 
 
@@ -66,29 +69,51 @@ if __name__ == '__main__':
     INIT_RESOURCES = 10
     speed = [2, 1]
     pallarect = palla_gif.get_rect()
+    blocco2rect = coso_img_flipr.get_rect()
+    blocco1rect = coso_img_flipl.get_rect()
     
     # rotate image
     def palla_rotator():
       palla_gif =  pygame.transform.rotate(palla_gif, ANGLE_ROT)
       pass
 
+############################
+###### losing cicle ########
+    def loser(side):
+      losing = True
+      ############### ciclo ###############
+      while losing == 0:
+         # Background color
+        # screen.fill((0, 0, 0))
+         # draw muri rotti
+         if side == 'l':
+            screen.blit(brokenWall_img, (GHIACCIOSOTTO_WIDTH,BLOCCO1))
+         else:
+            screen.blit(brokenWall_img_flip, (SCREEN_WIDTH - (GHIACCIOSOTTO_WIDTH*2),BLOCCO2))
+         #draw game over
+         screen.blit(game_over, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+
+         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                losing = False
+    pass
+
     # # muovi blocco 1
     # def move1(moveTF):
     #   
     #   pass
+    pygame.display.set_caption('----------- ICEBRAKER -----------')
   
+    pallarect.move_ip(SCREEN_HEIGHT/2, SCREEN_WIDTH/2)
 ################################################################## CICLO ##################################################################
     while play:
       
         # Background color
         screen.fill((0, 0, 0))
 
-        pygame.display.set_caption('----------- ICEBRAKER -----------')
-
         # draw cursori
         screen.blit(coso_img_flipl, (GHIACCIOSOTTO_WIDTH,BLOCCO1))
         screen.blit(coso_img_flipr, (SCREEN_WIDTH - (GHIACCIOSOTTO_WIDTH*2),BLOCCO2))
-        palla_rotator
 
         # lati
         for x in range(0, SCREEN_WIDTH, NEVESOTTO_WIDTH):
@@ -116,13 +141,13 @@ if __name__ == '__main__':
             #sposta 
             if event.type == pygame.KEYDOWN:##
                if event.key == pygame.K_q:
-                   dir[0] = -1
+                   dir[0] = -2
                if event.key == pygame.K_a:
-                   dir[0] = 1
+                   dir[0] = 2
                if event.key == pygame.K_p:
-                   dir[1] = -1
+                   dir[1] = -2
                if event.key == pygame.K_l:
-                   dir[1] = 1
+                   dir[1] = 2
             if event.type == pygame.KEYUP:##
                if event.key == pygame.K_q:
                   dir[0] = 0
@@ -137,13 +162,38 @@ if __name__ == '__main__':
             if event.type == moving:
                 BLOCCO1 += dir[0]
                 BLOCCO2 += dir[1]
-
+             #cursore tocca pareti
+            if BLOCCO2-(GHIACCIOSOTTO_WIDTH/2) < 0 :
+                BLOCCO2 +=1
+            if BLOCCO2+(GHIACCIOSOTTO_WIDTH/2) > SCREEN_HEIGHT:
+                BLOCCO2 -=1
+            if BLOCCO1-(GHIACCIOSOTTO_WIDTH/2) < 0 :
+                BLOCCO1 +=1
+            if BLOCCO1+(GHIACCIOSOTTO_WIDTH/2) > SCREEN_HEIGHT:
+                BLOCCO1 -=1
             
         pallarect = pallarect.move(speed)
-        if pallarect.left < 0 or pallarect.right > SCREEN_WIDTH:
-             speed[0] = -speed[0]
         if pallarect.top < 0 or pallarect.bottom > SCREEN_HEIGHT:
-           speed[1] = -speed[1]
+             #hai perso
+            speed[1] = -speed[1]
+
+        if pallarect.right > SCREEN_WIDTH-GHIACCIOSOTTO_WIDTH-30 and pallarect.top <= BLOCCO2+(GHIACCIOSOTTO_WIDTH/2) and pallarect.bottom >= BLOCCO2-(GHIACCIOSOTTO_WIDTH/2) :
+            speed[0] = -speed[0]
+
+        if pallarect.left < GHIACCIOSOTTO_WIDTH+30 and pallarect.top <= BLOCCO1+(GHIACCIOSOTTO_WIDTH/2) and pallarect.bottom >= BLOCCO1-(GHIACCIOSOTTO_WIDTH/2) :
+           speed[0] = -speed[0]
+
+        if pallarect.left < GHIACCIOSOTTO_WIDTH or pallarect.right > SCREEN_WIDTH-GHIACCIOSOTTO_WIDTH:
+            if pallarect.left < GHIACCIOSOTTO_WIDTH :
+               side = 'l'
+            if pallarect.right > SCREEN_WIDTH-GHIACCIOSOTTO_WIDTH:
+               side = 'r'
+             #hai perso
+            speed[0] = 0
+            speed[1] = 0
+           
+            
+            loser(side)
 
         #screen.fill(black)
         screen.blit(palla_gif, pallarect)
