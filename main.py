@@ -79,29 +79,46 @@ if __name__ == '__main__':
 
 ############################
 ###### losing cicle ########
-    def loser(side):
+    def loser():
       losing = True
       ############### ciclo ###############
-      while losing == 0:
-         # Background color
-        # screen.fill((0, 0, 0))
-         # draw muri rotti
-         if side == 'l':
-            screen.blit(brokenWall_img, (GHIACCIOSOTTO_WIDTH,BLOCCO1))
-         else:
-            screen.blit(brokenWall_img_flip, (SCREEN_WIDTH - (GHIACCIOSOTTO_WIDTH*2),BLOCCO2))
-         #draw game over
-         screen.blit(game_over, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+      while losing :
+        #  clock = pygame.time.Clock()
+        #  font = pygame.font.SysFont(None, 100)
+        #  text = ""
+        #  input_active = True
+          # Background color
+          screen.fill((0, 0, 0))
 
-         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                losing = False
-    pass
+          #draw game over
+          screen.blit(game_over, (SCREEN_WIDTH/2)-150, (SCREEN_HEIGHT/2)-76)
 
-    # # muovi blocco 1
-    # def move1(moveTF):
-    #   
-    #   pass
+          for event in pygame.event.get():
+             if event.type == pygame.QUIT:
+                 losing = False
+          # update display window
+        
+         # clock.tick(60)
+         # for event in pygame.event.get():
+         #     if event.type == pygame.QUIT:
+         #         run = False
+         #     elif event.type == pygame.MOUSEBUTTONDOWN:
+         #         input_active = True
+         #         text = ""
+         #     elif event.type == pygame.KEYDOWN and input_active:
+         #         if event.key == pygame.K_RETURN:
+         #             input_active = False
+         #         elif event.key == pygame.K_BACKSPACE:
+         #             text =  text[:-1]
+         #         else:
+         #             text += event.unicode
+         #
+         #     text_surf = font.render(text, True, (255, 0, 0))
+         #     screen.blit(text_surf, text_surf.get_rect(center = screen.get_rect().center))
+         #     pygame.display.flip()
+          pygame.display.update()
+        
+
     pygame.display.set_caption('----------- ICEBRAKER -----------')
   
     pallarect.move_ip(SCREEN_HEIGHT/2, SCREEN_WIDTH/2)
@@ -184,16 +201,10 @@ if __name__ == '__main__':
            speed[0] = -speed[0]
 
         if pallarect.left < GHIACCIOSOTTO_WIDTH or pallarect.right > SCREEN_WIDTH-GHIACCIOSOTTO_WIDTH:
-            if pallarect.left < GHIACCIOSOTTO_WIDTH :
-               side = 'l'
-            if pallarect.right > SCREEN_WIDTH-GHIACCIOSOTTO_WIDTH:
-               side = 'r'
              #hai perso
-            speed[0] = 0
-            speed[1] = 0
-           
-            
-            loser(side)
+            loser()
+            speed[0] = -speed[0]
+            speed[1] = -speed[1]
 
         #screen.fill(black)
         screen.blit(palla_gif, pallarect)
